@@ -1,0 +1,70 @@
+apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+
+def ARTIFACT_ID = "foo"
+
+android {
+    compileSdkVersion Integer.parseInt(project.ANDROID_BUILD_COMPILE_SDK_VERSION)
+    buildToolsVersion project.ANDROID_BUILD_TOOLS_VERSION
+
+    defaultConfig {
+        minSdkVersion Integer.parseInt(project.ANDROID_BUILD_MIN_SDK_VERSION)
+        targetSdkVersion Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    api project(":core")
+}
+
+task sourceJar(type: Jar) {
+    from "$buildDir/outputs/mapping"
+    from android.sourceSets.main.java.srcDirs
+    classifier "sources"
+}
+
+artifactoryPublish.dependsOn('assembleRelease')
+
+publishing {
+    publications {
+        aarPublication(MavenPublication) {
+            groupId = SDK_POM_GROUP
+            artifactId = ARTIFACT_ID
+            version = version
+
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+
+                configurations.getByName("archives").allDependencies.each {
+                    if (it.group != null && (it.name != null || "unspecified".equals(it.name)) && it.version != null) {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                    }
+                }
+            }
+
+            artifact(sourceJar)
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+        }
+    }
+}
+
+artifactoryPublish {
+    skip = false
+    publications(publishing.publications.aarPublication)
+}

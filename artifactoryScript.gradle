@@ -1,0 +1,36 @@
+def isSnapShot = IS_SNAPSHOT.toBoolean();
+
+allprojects {
+    apply plugin: "com.jfrog.artifactory"
+
+    group = SDK_POM_GROUP;
+    version = (isSnapShot) ? "${SDK_VERSION}-SNAPSHOT" : "${SDK_VERSION}"
+}
+
+artifactory {
+    contextUrl = "${artifactory_contextUrl}"
+    publish {
+        repository {
+            repoKey = (isSnapShot) ? "$theCoreRepoSnapshotId" : "$theCoreRepoId"
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+        }
+
+        defaults {
+            publishBuildInfo = false
+            publishPom = true
+            publishIvy = false
+
+            properties = ['build.status' : (isSnapShot) ? "integration" : "release",
+                          'build.name'   : "$it.project.name",
+                          'build.version': "$version"]
+        }
+    }
+    resolve {
+        repository {
+            repoKey = "${theCoreRepoKey}"
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+        }
+    }
+}
