@@ -17,20 +17,13 @@ artifactory {
         }
 
         defaults {
-            publishBuildInfo = false
+            publishBuildInfo = true
             publishPom = true
             publishIvy = false
 
             properties = ['build.status' : (isSnapShot) ? "integration" : "release",
                           'build.name'   : "$it.project.name",
                           'build.version': "$version"]
-        }
-    }
-    resolve {
-        repository {
-            repoKey = "${theCoreRepoKey}"
-            username = "${artifactory_user}"
-            password = "${artifactory_password}"
         }
     }
 }

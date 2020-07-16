@@ -27,7 +27,7 @@ android {
 }
 
 dependencies {
-    api "com.android.support:appcompat-v7:${ANDROID_SUPPORT_VERSION}"
+    api "androidx.appcompat:appcompat:1.1.0"
     api "com.google.android.gms:play-services-location:${PLAY_SERVICES_VERSION}"
 //    api 'com.google.code.gson:gson:2.8.1'
 //    api 'com.squareup.okhttp3:okhttp:3.8.1'
